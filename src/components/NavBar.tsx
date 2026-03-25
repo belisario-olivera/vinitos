@@ -1,9 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useState } from 'react';
-import { Wine, Menu, Plus, BookOpen } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { useState, useEffect } from 'react';
+import { Wine, Menu, Plus, BookOpen, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -12,15 +12,51 @@ import {
   SheetTitle,
 } from '@/components/ui/sheet';
 import { cn } from '@/lib/utils';
+import { createClient } from '@/lib/supabase/client';
+import type { User } from '@supabase/supabase-js';
 
 const NAV_LINKS = [
   { href: '/', label: 'Home' },
   { href: '/journal', label: 'Journal' },
 ] as const;
 
+const AUTH_PATHS = ['/login', '/signup'];
+
 export const NavBar = () => {
   const pathname = usePathname();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+
+  const isAuthPage = AUTH_PATHS.some((p) => pathname.startsWith(p));
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    const getUser = async () => {
+      const { data: { user: currentUser } } = await supabase.auth.getUser();
+      setUser(currentUser);
+    };
+
+    getUser();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user ?? null);
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const handleSignOut = async () => {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    router.push('/login');
+    router.refresh();
+  };
+
+  if (isAuthPage) return null;
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -54,6 +90,18 @@ export const NavBar = () => {
             <Plus className="mr-1 h-4 w-4" />
             Log Bottle
           </Button>
+
+          {user && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSignOut}
+              className="hidden md:inline-flex"
+            >
+              <LogOut className="mr-1 h-4 w-4" />
+              Sign out
+            </Button>
+          )}
 
           <Sheet open={open} onOpenChange={setOpen}>
             <SheetTrigger
@@ -94,6 +142,20 @@ export const NavBar = () => {
                   <Plus className="mr-1 h-4 w-4" />
                   Log Bottle
                 </Button>
+                {user && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setOpen(false);
+                      handleSignOut();
+                    }}
+                    className="mt-2 justify-start"
+                  >
+                    <LogOut className="mr-1 h-4 w-4" />
+                    Sign out
+                  </Button>
+                )}
               </nav>
             </SheetContent>
           </Sheet>

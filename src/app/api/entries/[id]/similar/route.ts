@@ -1,22 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { wineStore } from '@/lib/mock/mockStore';
+import { verifyAuth, handleAuthError } from '@/lib/auth';
+import * as wineEntryService from '@/services/wineEntryService';
+import * as recommendationService from '@/services/recommendationService';
 
 type RouteParams = { params: Promise<{ id: string }> };
 
 export const GET = async (_request: NextRequest, { params }: RouteParams) => {
-  const { id } = await params;
-  const entry = wineStore.getById(id);
+  try {
+    const { userId } = await verifyAuth();
+    const { id } = await params;
 
-  if (!entry) {
-    return NextResponse.json(
-      { ok: false, error: 'Entry not found' },
-      { status: 404 }
+    const entry = await wineEntryService.getEntryById(userId, id);
+    if (!entry) {
+      return NextResponse.json(
+        { ok: false, error: 'Entry not found' },
+        { status: 404 }
+      );
+    }
+
+    const recommendations = await recommendationService.getSimilarWines(userId, id);
+    return NextResponse.json({
+      ok: true,
+      data: { baseEntryId: id, recommendations },
+    });
+  } catch (error) {
+    return handleAuthError(error) ?? NextResponse.json(
+      { ok: false, error: 'Internal server error' },
+      { status: 500 }
     );
   }
-
-  const recommendations = wineStore.getSimilar(id);
-  return NextResponse.json({
-    ok: true,
-    data: { baseEntryId: id, recommendations },
-  });
 };

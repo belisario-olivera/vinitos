@@ -1,7 +1,16 @@
 import { NextResponse } from 'next/server';
-import { wineStore } from '@/lib/mock/mockStore';
+import { verifyAuth, handleAuthError } from '@/lib/auth';
+import * as wineEntryService from '@/services/wineEntryService';
 
-export const GET = () => {
-  const stats = wineStore.getStats();
-  return NextResponse.json({ ok: true, data: stats });
+export const GET = async () => {
+  try {
+    const { userId } = await verifyAuth();
+    const stats = await wineEntryService.getStats(userId);
+    return NextResponse.json({ ok: true, data: stats });
+  } catch (error) {
+    return handleAuthError(error) ?? NextResponse.json(
+      { ok: false, error: 'Internal server error' },
+      { status: 500 }
+    );
+  }
 };

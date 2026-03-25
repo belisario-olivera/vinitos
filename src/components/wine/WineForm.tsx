@@ -22,7 +22,7 @@ import {
   type CreateWineEntryFormValues,
 } from '@/lib/validation/schemas';
 import type { WineEntry } from '@/types/wine';
-import { MOCK_REGIONS, MOCK_GRAPES } from '@/lib/mock/mockData';
+import { WINE_REGIONS, WINE_GRAPES } from '@/lib/constants/wine';
 
 type WineFormProps = {
   defaultValues?: WineEntry;
@@ -114,7 +114,7 @@ export const WineForm = ({ defaultValues, onSubmit, isSubmitting }: WineFormProp
                 <SelectValue placeholder="Select a region" />
               </SelectTrigger>
               <SelectContent>
-                {MOCK_REGIONS.map((r) => (
+                {WINE_REGIONS.map((r) => (
                   <SelectItem key={r} value={r}>
                     {r}
                   </SelectItem>
@@ -135,7 +135,7 @@ export const WineForm = ({ defaultValues, onSubmit, isSubmitting }: WineFormProp
         <div>
           <Label>Grapes</Label>
           <div className="mt-1.5 flex flex-wrap gap-1.5">
-            {MOCK_GRAPES.slice(0, 16).map((grape) => (
+            {WINE_GRAPES.slice(0, 16).map((grape) => (
               <button
                 key={grape}
                 type="button"

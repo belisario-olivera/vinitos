@@ -11,7 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import type { WineFilters as WineFiltersType, WineSortOption } from '@/types/wine';
-import { MOCK_REGIONS, MOCK_GRAPES } from '@/lib/mock/mockData';
+import { WINE_REGIONS, WINE_GRAPES } from '@/lib/constants/wine';
 
 type WineFiltersProps = {
   filters: WineFiltersType;
@@ -76,7 +76,7 @@ export const WineFilters = ({ filters, onChange }: WineFiltersProps) => {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="__all__">All regions</SelectItem>
-            {MOCK_REGIONS.map((r) => (
+            {WINE_REGIONS.map((r) => (
               <SelectItem key={r} value={r}>
                 {r}
               </SelectItem>
@@ -93,7 +93,7 @@ export const WineFilters = ({ filters, onChange }: WineFiltersProps) => {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="__all__">All grapes</SelectItem>
-            {MOCK_GRAPES.map((g) => (
+            {WINE_GRAPES.map((g) => (
               <SelectItem key={g} value={g}>
                 {g}
               </SelectItem>
