@@ -29,6 +29,10 @@ export const wineFiltersSchema = z.object({
   sort: z.enum(['newest', 'oldest', 'highest-rated', 'lowest-rated']).optional(),
 });
 
+export const wineSearchSchema = z.object({
+  q: z.string().min(2, 'Query must be at least 2 characters').max(100),
+});
+
 export type CreateWineEntryInput = z.infer<typeof createWineEntrySchema>;
 export type CreateWineEntryFormValues = z.input<typeof createWineEntrySchema>;
 export type UpdateWineEntryInput = z.infer<typeof updateWineEntrySchema>;

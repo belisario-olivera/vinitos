@@ -16,12 +16,14 @@ import {
 } from '@/components/ui/select';
 import { WineRating } from '@/components/wine/WineRating';
 import { TagInput } from '@/components/wine/TagInput';
+import { WineSearchInput } from '@/components/wine/WineSearchInput';
 import {
   createWineEntrySchema,
   type CreateWineEntryInput,
   type CreateWineEntryFormValues,
 } from '@/lib/validation/schemas';
 import type { WineEntry } from '@/types/wine';
+import type { WineSearchResult } from '@/types/wineCatalog';
 import { WINE_REGIONS, WINE_GRAPES } from '@/lib/constants/wine';
 
 type WineFormProps = {
@@ -63,6 +65,23 @@ export const WineForm = ({ defaultValues, onSubmit, isSubmitting }: WineFormProp
     }
   };
 
+  const handleWineSelect = (wine: WineSearchResult) => {
+    form.setValue('title', wine.name);
+    if (wine.producer) form.setValue('producer', wine.producer);
+
+    const matchingRegion = WINE_REGIONS.find(
+      (r) =>
+        r.toLowerCase().includes(wine.region.toLowerCase()) ||
+        wine.region.toLowerCase().includes(r.toLowerCase())
+    );
+    if (matchingRegion) form.setValue('region', matchingRegion);
+
+    const matchingGrapes = wine.grapes.filter((g) =>
+      (WINE_GRAPES as readonly string[]).includes(g)
+    );
+    if (matchingGrapes.length > 0) form.setValue('grapes', matchingGrapes);
+  };
+
   return (
     <form
       onSubmit={form.handleSubmit((data) => onSubmit(data as CreateWineEntryInput))}
@@ -71,10 +90,12 @@ export const WineForm = ({ defaultValues, onSubmit, isSubmitting }: WineFormProp
       <div className="space-y-4">
         <div>
           <Label htmlFor="title">Wine Name *</Label>
-          <Input
+          <WineSearchInput
             id="title"
+            value={form.watch('title') ?? ''}
+            onChange={(v) => form.setValue('title', v)}
+            onSelect={handleWineSelect}
             placeholder="e.g. Catena Zapata Malbec"
-            {...form.register('title')}
           />
           {form.formState.errors.title && (
             <p className="mt-1 text-sm text-destructive">
